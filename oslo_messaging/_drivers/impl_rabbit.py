@@ -562,6 +562,7 @@ class Connection(object):
         self.name = "%s:%d:%s" % (os.path.basename(sys.argv[0]),
                                   os.getpid(),
                                   self.connection_id)
+        LOG.info("+++++++++++++++++++++++++++++++++connection: %s, %s", self._url, self.login_method)
         self.connection = kombu.connection.Connection(
             self._url, ssl=self._fetch_ssl_params(),
             login_method=self.login_method,
