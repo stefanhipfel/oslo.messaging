@@ -159,6 +159,7 @@ class RPCServer(msg_server.MessageHandlingServer):
         except Exception:
             LOG.exception("Can not acknowledge message. Skip processing")
             return
+        
         self.metrics.queue.put({
             'message': message,
             'tag': "event",

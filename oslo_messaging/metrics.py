@@ -16,7 +16,10 @@ class Metrics():
    def counter(self):
       while True:
          event = self.queue.get()
-         method = event.message.get('method')
+         method = event['message'].get('method')
 
-         stat = "oslo.messaging.{}.{}".format(method, event.message.tag)
+         stat = "oslo.messaging.{}.{}".format(method, event['tag'])
+         print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+         print(stat)
          self.statsd.incr(stat)
+         self.queue.task_done()
