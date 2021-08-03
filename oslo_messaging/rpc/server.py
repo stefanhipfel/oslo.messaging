@@ -161,7 +161,7 @@ class RPCServer(msg_server.MessageHandlingServer):
             return
         
         self.metrics.queue.put({
-            'message': message,
+            'message': message.message,
             'tag': "event",
         })
         failure = None
@@ -171,7 +171,7 @@ class RPCServer(msg_server.MessageHandlingServer):
             failure = e.exc_info
             LOG.debug(u'Expected exception during message handling (%s)', e)
             self.metrics.queue.put({
-                'message': message,
+                'message': message.message,
                 'tag': "expected_exception",
             })
         except Exception:
@@ -181,7 +181,7 @@ class RPCServer(msg_server.MessageHandlingServer):
             failure = sys.exc_info()
             LOG.exception('Exception during message handling')
             self.metrics.queue.put({
-                'message': message,
+                'message': message.message,
                 'tag': "exception",
             })
         try:

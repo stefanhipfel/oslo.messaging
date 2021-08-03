@@ -17,7 +17,6 @@ class Metrics():
       while True:
          event = self.queue.get()
          method = event['message'].get('method')
-
          stat = "oslo.messaging.{}.{}".format(method, event['tag'])
          print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
          print(stat)
