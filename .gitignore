@@ -25,3 +25,4 @@ dist/
 .stestr/
 releasenotes/build
 cover/
+venv/

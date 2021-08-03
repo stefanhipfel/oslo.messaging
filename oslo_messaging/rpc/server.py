@@ -159,20 +159,30 @@ class RPCServer(msg_server.MessageHandlingServer):
         except Exception:
             LOG.exception("Can not acknowledge message. Skip processing")
             return
-
+        self.metrics.queue.put({
+            'message': message,
+            'tag': "event",
+        })
         failure = None
         try:
             res = self.dispatcher.dispatch(message)
         except rpc_dispatcher.ExpectedException as e:
             failure = e.exc_info
             LOG.debug(u'Expected exception during message handling (%s)', e)
+            self.metrics.queue.put({
+                'message': message,
+                'tag': "expected_exception",
+            })
         except Exception:
             # current sys.exc_info() content can be overridden
             # by another exception raised by a log handler during
             # LOG.exception(). So keep a copy and delete it later.
             failure = sys.exc_info()
             LOG.exception('Exception during message handling')
-
+            self.metrics.queue.put({
+                'message': message,
+                'tag': "exception",
+            })
         try:
             if failure is None:
                 message.reply(res)
