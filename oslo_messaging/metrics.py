@@ -11,14 +11,18 @@ class Metrics():
       self.statsd = statsd.StatsClient(host, port)
 
    def start(self):
+      # gets killed once the main process exits
       threading.Thread(target=self.counter, daemon=True).start()
 
    def counter(self):
       while True:
-         event = self.queue.get()
-         method = event['message'].get('method')
-         stat = "oslo.messaging.{}.{}".format(method, event['tag'])
-         print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-         print(stat)
-         self.statsd.incr(stat)
-         self.queue.task_done()
+         try:
+            incoming = self.queue.get()
+            message = incoming['message'].message
+
+            method = message.get('method')
+            stat = "oslo.messaging.{}.{}".format(method, incoming['tag'])
+            self.statsd.incr(stat)
+            self.queue.task_done()
+         except Exception:
+            LOG.exception('Exception during message metrics handling')
