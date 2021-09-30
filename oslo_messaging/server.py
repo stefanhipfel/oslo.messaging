@@ -64,6 +64,9 @@ _metrics_opts = [
     cfg.StrOpt('statsd_host',
                default='localhost',
                help='Host of the statsd service.'),
+    cfg.BoolOpt('statsd_enabled',
+               default=False,
+               help='Enables/Disables the metrics statsd server.'),
 ]
 
 
@@ -339,9 +342,11 @@ class MessageHandlingServer(service.ServiceBase, _OrderedTaskRunner):
         self.conf = transport.conf
         self.conf.register_opts(_pool_opts)
         self.conf.register_opts(_metrics_opts)
-        
-        self.metrics = metrics.Metrics(self.conf.statsd_host, self.conf.statsd_port)
-        self.metrics.start()
+
+        if self.conf.statsd_enabled:
+            self.metrics = metrics.Metrics(self.conf.statsd_host, self.conf.statsd_port)
+            self.metrics.start()
+
         self.transport = transport
         self.dispatcher = dispatcher
         self.executor_type = executor
