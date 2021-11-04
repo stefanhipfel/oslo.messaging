@@ -159,6 +159,11 @@ class RPCServer(msg_server.MessageHandlingServer):
         except Exception:
             LOG.exception("Can not acknowledge message. Skip processing")
             return
+        if self.conf.statsd_enabled:
+            self.metrics.queue.put({
+                'message': message,
+                'tag': "event",
+            })
 
         failure = None
         try:
@@ -169,16 +174,30 @@ class RPCServer(msg_server.MessageHandlingServer):
             # LOG.debug(). So keep a copy and delete it later.
             failure = e.exc_info
             LOG.debug(u'Expected exception during message handling (%s)', e)
+            if self.conf.statsd_enabled:
+                self.metrics.queue.put({
+                    'message': message,
+                    'tag': "expected_exception",
+                })
         except rpc_dispatcher.NoSuchMethod as e:
             failure = sys.exc_info()
             if e.method.endswith('_ignore_errors'):
                 LOG.debug('Method %s not found', e.method)
             else:
                 LOG.exception('Exception during message handling')
+                if self.conf.statsd_enabled:
+                    self.metrics.queue.put({
+                        'message': message,
+                        'tag': "no_such_method_exception",
+                    })
         except Exception:
             failure = sys.exc_info()
             LOG.exception('Exception during message handling')
-
+            if self.conf.statsd_enabled:
+                self.metrics.queue.put({
+                    'message': message,
+                    'tag': "exception",
+                })
         try:
             if failure is None:
                 message.reply(res)
