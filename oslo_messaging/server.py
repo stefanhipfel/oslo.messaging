@@ -426,6 +426,8 @@ class MessageHandlingServer(service.ServiceBase, _OrderedTaskRunner,
             raise ServerListenError(self.target, ex)
 
         self.listener.start(self._on_incoming)
+        
+        self.metrics.start()
 
     @ordered(after='start')
     def stop(self):
@@ -456,6 +458,8 @@ class MessageHandlingServer(service.ServiceBase, _OrderedTaskRunner,
         # Close listener connection after processing all messages
         if self.listener:
             self.listener.cleanup()
+            
+        self.metrics.stop()
 
     def reset(self):
         """Reset service.
